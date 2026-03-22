@@ -1,1 +1,120 @@
-# NoInternet-ops.github.io
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Internet Outage Interaction</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #f5f5f5;
+}
+
+.container {
+  margin-top: 50px;
+}
+
+input, textarea {
+  padding: 10px;
+  margin: 10px;
+  width: 250px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  cursor: pointer;
+}
+
+#adminPanel {
+  position: fixed;
+  right: 10px;
+  top: 10px;
+}
+
+#list {
+  margin-top: 30px;
+  background: white;
+  padding: 15px;
+  display: inline-block;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+  <h1>Ask a Question</h1>
+
+  <input id="number" placeholder="Enter your number">
+  <br>
+
+  <textarea id="question" placeholder="Write your question (optional)"></textarea>
+  <br>
+
+  <button onclick="send()">I want to ask a question</button>
+</div>
+
+<div id="list">
+  <h2>Requests:</h2>
+  <ul id="requests"></ul>
+</div>
+
+<audio id="sound" src="https://www.soundjay.com/buttons/beep-07.wav"></audio>
+
+<!-- ADMIN PANEL (tylko dla Ciebie) -->
+<div id="adminPanel">
+  <button onclick="outage()">⚠️ SIMULATE INTERNET OUTAGE</button>
+</div>
+
+<script>
+let requests = [];
+
+function send(){
+  let number = document.getElementById("number").value;
+  let question = document.getElementById("question").value;
+
+  if(number === ""){
+    alert("Enter your number!");
+    return;
+  }
+
+  let entry = "Number: " + number;
+
+  if(question !== ""){
+    entry += " | Question: " + question;
+  }
+
+  requests.push(entry);
+  updateList();
+
+  document.getElementById("sound").play();
+
+  document.getElementById("number").value = "";
+  document.getElementById("question").value = "";
+}
+
+function updateList(){
+  let list = document.getElementById("requests");
+  list.innerHTML = "";
+
+  requests.forEach(r => {
+    let li = document.createElement("li");
+    li.textContent = r;
+    list.appendChild(li);
+  });
+}
+
+function outage(){
+  document.body.innerHTML = `
+    <div style="color:red; text-align:center; margin-top:100px;">
+      <h1>NO INTERNET CONNECTION</h1>
+      <p>Connection lost...</p>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
