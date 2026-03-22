@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Internet Outage Interaction</title>
+<title>Internet Outage Live</title>
 
 <style>
 body {
@@ -13,13 +13,13 @@ body {
 }
 
 .container {
-  margin-top: 50px;
+  margin-top: 40px;
 }
 
 input, textarea {
   padding: 10px;
   margin: 10px;
-  width: 250px;
+  width: 260px;
 }
 
 button {
@@ -29,17 +29,36 @@ button {
 }
 
 #list {
-  margin-top: 30px;
+  margin-top: 20px;
   background: white;
   padding: 15px;
   display: inline-block;
   border-radius: 10px;
 }
 
-li {
-  margin: 5px 0;
+#adminPanel {
+  display: none;
+  margin-top: 20px;
+}
+
+.offline {
+  background: #fff;
+  color: #333;
+  height: 100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+.big-icon {
+  font-size: 80px;
 }
 </style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js"></script>
 
 </head>
 <body>
@@ -47,42 +66,62 @@ li {
 <div class="container">
   <h1>Ask a Question</h1>
 
-  <input id="number" placeholder="Enter your number">
+  <input id="number" placeholder="Your number">
   <br>
 
-  <textarea id="question" placeholder="Write your question (optional)"></textarea>
+  <textarea id="question" placeholder="Your question (optional)"></textarea>
   <br>
 
   <button onclick="send()">I want to ask a question</button>
+
+  <br><br>
+
+  <!-- LOGIN -->
+  <input type="password" id="pass" placeholder="Teacher password">
+  <button onclick="login()">Login</button>
+
+  <div id="adminPanel">
+    <button onclick="triggerOutage()">⚠️ TRIGGER OUTAGE</button>
+  </div>
 </div>
 
 <div id="list">
-  <h2>Requests:</h2>
+  <h2>Live Requests:</h2>
   <ul id="requests"></ul>
 </div>
 
 <audio id="sound" src="https://www.soundjay.com/buttons/beep-07.wav"></audio>
 
 <script>
-let requests = [];
+// 🔥 TU WSTAW SWOJE DANE FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyC7YJdUPNMhdcwkSeqJqCmD9phwCUjl-wY",
+  authDomain: "nointernet-4e893.firebaseapp.com",
+  databaseURL: "https://nointernet-4e893-default-rtdb.firebaseio.com/",
+  projectId: "nointernet-4e893",
+};
 
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// LOGIN (tylko dla Ciebie)
+function login(){
+  if(document.getElementById("pass").value === "1234"){
+    document.getElementById("adminPanel").style.display = "block";
+  }
+}
+
+// wysyłanie
 function send(){
   let number = document.getElementById("number").value;
   let question = document.getElementById("question").value;
 
-  if(number === ""){
-    alert("Enter your number!");
-    return;
-  }
+  if(!number) return alert("Enter number!");
 
-  let entry = "Number: " + number;
-
-  if(question !== ""){
-    entry += " | Question: " + question;
-  }
-
-  requests.push(entry);
-  updateList();
+  db.ref("requests").push({
+    number,
+    question
+  });
 
   document.getElementById("sound").play();
 
@@ -90,39 +129,53 @@ function send(){
   document.getElementById("question").value = "";
 }
 
-function updateList(){
+// odbieranie (LIVE 🔥)
+db.ref("requests").on("value", snapshot => {
+  let data = snapshot.val();
   let list = document.getElementById("requests");
   list.innerHTML = "";
 
-  requests.forEach(r => {
+  for(let id in data){
     let li = document.createElement("li");
-    li.textContent = r;
+    li.textContent = "No." + data[id].number + " | " + data[id].question;
     list.appendChild(li);
-  });
+  }
+});
+
+// trigger awarii
+function triggerOutage(){
+  db.ref("outage").set(true);
 }
 
-// 💣 UKRYTY TRIGGER (klik w prawy górny róg)
-document.addEventListener("click", function(e){
-  if(e.clientX > window.innerWidth - 60 && e.clientY < 60){
-    outage();
+// słuchanie awarii
+db.ref("outage").on("value", snap => {
+  if(snap.val()){
+    showOffline();
   }
 });
 
-// 📱 działa też na telefonie (dotyk)
-document.addEventListener("touchstart", function(e){
-  let touch = e.touches[0];
-  if(touch.clientX > window.innerWidth - 60 && touch.clientY < 60){
-    outage();
-  }
-});
+// ekran offline
+function showOffline(){
+  let counter = 5;
 
-function outage(){
   document.body.innerHTML = `
-    <div style="background:black; color:red; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-      <h1>NO INTERNET CONNECTION</h1>
-      <p>Reconnecting...</p>
+    <div class="offline">
+      <div class="big-icon">📡❌</div>
+      <h1>No Internet</h1>
+      <p>Try checking the network cables, modem, and router.</p>
+      <p id="count">Reconnecting in ${counter}...</p>
     </div>
   `;
+
+  let interval = setInterval(() => {
+    counter--;
+    document.getElementById("count").innerText =
+      "Reconnecting in " + counter + "...";
+
+    if(counter === 0){
+      clearInterval(interval);
+    }
+  }, 1000);
 }
 </script>
 
