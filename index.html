@@ -9,6 +9,7 @@ body {
   font-family: Arial;
   text-align: center;
   background: #f5f5f5;
+  margin: 0;
 }
 
 .container {
@@ -27,17 +28,16 @@ button {
   cursor: pointer;
 }
 
-#adminPanel {
-  position: fixed;
-  right: 10px;
-  top: 10px;
-}
-
 #list {
   margin-top: 30px;
   background: white;
   padding: 15px;
   display: inline-block;
+  border-radius: 10px;
+}
+
+li {
+  margin: 5px 0;
 }
 </style>
 
@@ -62,11 +62,6 @@ button {
 </div>
 
 <audio id="sound" src="https://www.soundjay.com/buttons/beep-07.wav"></audio>
-
-<!-- ADMIN PANEL (tylko dla Ciebie) -->
-<div id="adminPanel">
-  <button onclick="outage()">⚠️ SIMULATE INTERNET OUTAGE</button>
-</div>
 
 <script>
 let requests = [];
@@ -106,11 +101,26 @@ function updateList(){
   });
 }
 
+// 💣 UKRYTY TRIGGER (klik w prawy górny róg)
+document.addEventListener("click", function(e){
+  if(e.clientX > window.innerWidth - 60 && e.clientY < 60){
+    outage();
+  }
+});
+
+// 📱 działa też na telefonie (dotyk)
+document.addEventListener("touchstart", function(e){
+  let touch = e.touches[0];
+  if(touch.clientX > window.innerWidth - 60 && touch.clientY < 60){
+    outage();
+  }
+});
+
 function outage(){
   document.body.innerHTML = `
-    <div style="color:red; text-align:center; margin-top:100px;">
+    <div style="background:black; color:red; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
       <h1>NO INTERNET CONNECTION</h1>
-      <p>Connection lost...</p>
+      <p>Reconnecting...</p>
     </div>
   `;
 }
