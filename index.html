@@ -81,8 +81,8 @@ button {
   <button onclick="login()">Login</button>
 
   <div id="adminPanel">
-    <button onclick="triggerOutage()">⚠️ TRIGGER OUTAGE</button>
-  </div>
+  <button onclick="triggerOutage()">⚠️ TRIGGER OUTAGE</button>
+  <button onclick="resetOutage()">✅ RESET OUTAGE</button>
 </div>
 
 <div id="list">
@@ -176,6 +176,11 @@ function showOffline(){
       clearInterval(interval);
     }
   }, 1000);
+}
+  // reset awarii
+function resetOutage() {
+  db.ref("outage").set(false);
+  location.reload(); // odświeża stronę, żeby przywrócić normalny widok
 }
 </script>
 
